@@ -94,9 +94,10 @@ func SelectForm() gin.HandlerFunc {
 	}
 }
 
-func GetAllForms() gin.HandlerFunc {
+func GetAllFormsUser() gin.HandlerFunc {
 	var allforms []db.FormData
-	err := db.ExtractAllForms(&allforms)
+	var user_mail = // Function to get the current user's Email Address
+	err := db.ExtractAllUserForms(&allforms, user_mail)
 
 	return func(c *gin.Context) {
 		if err != nil {
