@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/Gymkhana-Forms/backend/db"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,22 +10,34 @@ import (
 )
 
 type FormData struct {
-	ID       primitive.ObjectID
-	Form_ID  string
-	FormType string
-	Data     map[string]interface{}
+	ID           primitive.ObjectID
+	Form_ID      string
+	FormType     string
+	Submitted_by string
+	Data         map[string]interface{}
 }
 
 var formCollection *mongo.Collection = db.OpenCollection(db.Client, "forms")
 
 func ExtractFormByID(myform *FormData, id string) error {
-	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	var result bson.M
+	err := formCollection.FindOne(context.TODO(), bson.D{{"form_id", id}}).Decode(&result)
 
-	defer cancel()
-	err := formCollection.FindOne(ctx, bson.M{"form_id": id}).Decode(myform)
+	bsonBytes, _ := bson.Marshal(result)
+	bson.Unmarshal(bsonBytes, myform)
 	return err
 }
 
-func ExtractAllForms(allforms *[]FormData) error {
+func ExtractAllUserForms(allforms *[]FormData, user_mail string) error {
+	cursor, err := formCollection.Find(context.TODO(), bson.D{{"submitted_by", user_mail}})
+	if err != nil {
+		return err
+	} else {
+		err = cursor.Decode(allforms)
+	}
+	return err
+}
+
+func ExtractAllForms(allforms []FormData) error {
 	return nil
 }
